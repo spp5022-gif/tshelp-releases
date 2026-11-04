@@ -1,0 +1,26 @@
+name: TSHELP keep latest three binaries per platform
+on:
+  release:
+    types: [published, edited]
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: tshelp-binary-retention
+  cancel-in-progress: false
+jobs:
+  retain:
+    if: github.repository == 'spp5022-gif/tshelp-releases'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python script/test_tshelp_retention.py
+      - run: python script/retain-tshelp-releases.py --apply
+        env:
+          GH_TOKEN: ${{ github.token }}
