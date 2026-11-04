@@ -45,6 +45,13 @@ class RetentionTests(unittest.TestCase):
     def test_no_deletion_below_three(self):
         self.assertEqual(module.plan([row(1), row(2)])[1], [])
 
+    def test_drafts_do_not_displace_published_and_binary_is_deleted_last(self):
+        draft = row(99)
+        draft["draft"] = True
+        kept, deleted = module.plan([row(1), row(2), row(3), row(4), draft])
+        self.assertNotIn(("development-0.4.99", "agent.apk"), kept)
+        self.assertEqual([a["name"] for _, a in deleted], ["agent.apk.sha256", "agent.apk"])
+
 
 if __name__ == "__main__":
     unittest.main()
